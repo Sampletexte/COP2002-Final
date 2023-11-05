@@ -1,6 +1,5 @@
 #include <iostream>
-#include <string>
-#include <vector>
+
 
 using namespace std;
 
@@ -38,8 +37,8 @@ int sbox[16][16] = {
       0xe1, 0xf8, 0x98, 0x11, 0x69, 0xd9, 0x8e, 0x94,
       0x9b, 0x1e, 0x87, 0xe9, 0xce, 0x55, 0x28, 0xdf, //E
       0x8c, 0xa1, 0x89, 0x0d, 0xbf, 0xe6, 0x42, 0x68,
-      0x41, 0x99, 0x2d, 0x0f, 0xb0, 0x54, 0xbb, 0x16 }; //F
-}
+      0x41, 0x99, 0x2d, 0x0f, 0xb0, 0x54, 0xbb, 0x16 //F
+};
 
 int Rcon[10] = {
         0x01, 0x02, 0x04,0x08,0x10,0x20,0x40,0x80,0x1b,0x36,
@@ -60,29 +59,32 @@ void KeyGenerate(int finalkey[4][4]) {
 
 };
 
-int * CreateWi(int finalkey[40][4], int idx){
-    int wi[4];
+
+// Takes in the key and returns the column at the index( the x value )
+int * CreateWi(int** finalkey, int idx){
+    int * wi = (int *)malloc( sizeof(int) * 4);
     for(int x = 0; x <4; x++)
-        wi[x] = finalkey[idx][3];
+        wi[x] = finalkey[x][idx];
 
     return wi;
 }
 
 int * RotWord(int word[4])
 {
-    int* tmp = word;
+    // Store the first value to move it to the bottom
+    int first_val = word[0];
     // Shift the values up
     for(int i=0; i < 3; i++)
     {
-        tmp[i] = tmp[i+1];
+        word[i] = word[i+1];
     }
     // Add value from front to the back
-    tmp[3] = word[0];
+    word[3] = first_val;
 
-    return tmp;
+    return word;
 }
 
-// For the key expansion
+// Subsitutes bytes from the user input to the sbox using user input front and back nibbles( 4 bits in a byte )
 int * MakeSubBytes(int user_input[4]) {
 
     for(int y = 0; y < 4; y++){
@@ -100,11 +102,15 @@ int * XorWi(int * source, int *second)
 {
     for(int i=0; i < 4; i++)
         source[i] ^= second[i];
-    return second;
+    return source;
 }
 
-void KeyExpand(int finalkey[4][4]){
-    int new_key[40][4];
+int** KeyExpand(int finalkey[4][4]){
+    // Dynamically allocates memory for the new key. It may be better to use a vector for easier passing through functions and expansion.
+    int** new_key = (int**)malloc(4 * sizeof(int*));
+    for (int i = 0; i < 40; i++) {
+        new_key[i] = (int*)malloc(40 * sizeof(int));
+    }
 
     // Assign final key to new final key
     for(int y=0; y < 4; y++) {
@@ -112,23 +118,30 @@ void KeyExpand(int finalkey[4][4]){
             new_key[y][x] = finalkey[y][x];
     }
 
-    int n = 0;  // The current column being generated
+    int c_idx = 4;  // The current column being generated. Starts at 4 as that is the start after the origional key. (Arrays start from zero)
 
     for(int round_num=0; round_num < 10; round_num++)
     {
         int rcon[4] = {Rcon[round_num], 0,0,0};
-        int * wi = XorWi(MakeSubBytes(RotWord(CreateWi(new_key, n-1))), XorWi(CreateWi(new_key, n-4), rcon));
-        for(int j=0; j < 4; j++)
-            new_key[n][j] = wi[j];
-        n++;
-        for(int i=0; i < 4; i++)
+        int * wi_1 = MakeSubBytes(RotWord(CreateWi(new_key, c_idx-1)));
+        int * wi_4 = XorWi(CreateWi(new_key, c_idx-4), rcon);
+        int * wi = XorWi(wi_1, wi_4);
+
+        for(int j=0; j < 4; j++) // Copy the wi column to the expanded key
+            new_key[j][c_idx] = wi[j];
+        c_idx++;
+
+        for(int i=0; i < 3; i++)
         {
-            wi = XorWi(CreateWi(new_key, n-1), CreateWi(new_key,n-4));
-            for(int j=0; j < 4; j++)
-                new_key[n][j] = wi[j];
-            n++;
+            wi = XorWi(CreateWi(new_key, c_idx-1), CreateWi(new_key,c_idx-4));
+
+            for(int j=0; j < 4; j++) // Copy the wi column to the expanded key
+                new_key[j][c_idx] = wi[j];
+            c_idx++;
         }
     }
+
+    return new_key;
 
 }
 
@@ -148,11 +161,24 @@ void MakeSubBytes(int user_input[4][4]){
 
 
 int main() {
-    int finalkey[4][4];
-    int wi[4][1];
+    // Key used to test output
+    int finalkey[4][4] = {
+        0x2b, 0x28, 0xab, 0x09,
+        0x7e, 0xae, 0xf7, 0xcf,
+        0x15, 0xd2, 0x15, 0x4f,
+        0x16, 0xa6, 0x88, 0x3c,
+    };
 
-    KeyGenerate(finalkey);
-    CreateWi(finalkey,wi);
+    //KeyGenerate(finalkey);
+    int** new_key = KeyExpand(finalkey);
+
+    for (int i = 0; i < 4; i++) {
+        for (int j = 40; j < 44; j++) {
+            std::cout << "I: " << i << " | " << hex <<  new_key[i][j] << " ";
+        }
+        std::cout << std::endl;
+    }
+    
 
 
 
