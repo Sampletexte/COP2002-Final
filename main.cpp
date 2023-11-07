@@ -198,9 +198,9 @@ int Cipher(int user_input,int finalkey[4][4]){
         MixColumns(user_input);
         AddRoundkey(user_input,newkey ,(i * 4));
 
-    return user_input;
+    
     }
-
+      return user_input;
 
 
 
