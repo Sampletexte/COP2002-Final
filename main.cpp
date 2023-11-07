@@ -97,6 +97,23 @@ int * MakeSubBytes(int user_input[4]) {
 
 }
 
+// Substitute the Bytes of the user_input to those of the sbox
+void UseSubBytes(int user_input){
+
+    for(int x = 0; x < 4; x++){
+        for (int y = 0; y < 4; y++) {
+            int sbox_x = user_input[x][y] >> 4;
+            int sbox_y = user_input[x][y] & 0xf;
+            user_input[x][y] = sbox[sbox_x][sbox_y];
+        }
+
+    }
+
+}
+
+
+
+
 // returns the source WI
 int * XorWi(int * source, int *second)
 {
@@ -104,6 +121,30 @@ int * XorWi(int * source, int *second)
         source[i] ^= second[i];
     return source;
 }
+// Converts the original text the user inputs, into the "user_input[4][4] array
+int ** FourByFour(string orig_text){
+    int counter = 0;
+            char user_input[4][4];
+    for(int i = 0; i < 4; i++){
+        for(int j=0; j < 4; j++){
+            orig_text[counter] = user_input[4][4];
+            counter += 1;
+        }
+    }
+
+}
+
+void AddRoundKey(int user_input ,int new_key,int i){
+    for(i; i < 4; i++){
+        for (int j = 0; j < 4; j++)
+            user_input[i][j] = user_input[i][j] ^ new_key[i][j];
+
+    }
+
+}
+
+
+
 
 int** KeyExpand(int finalkey[4][4]){
     // Dynamically allocates memory for the new key. It may be better to use a vector for easier passing through functions and expansion.
@@ -145,19 +186,27 @@ int** KeyExpand(int finalkey[4][4]){
 
 }
 
+int Cipher(int user_input,int finalkey[4][4]){
+    // LOOK AT BELOW CODE ERROR ERROR ERROR ERROR ERROR ERROR ERROR ERROR ERROR ERROR ERROR ERROR IT IS BASICALLY PSUEDO CODE BECAUSE I DONT KNOW HOW YOUR FUNCTIONS ARE STRUCTURED
+    int newkey = KeyExpand(finalkey[4][4])
+    //Round 0
+    AddRoundKey(user_input,finalkey);
+    //Round 1-10
+    for(int i = 1; i <= 10; i++){
+        UseSubBytes(user_input);
+        ShiftRows(user_input);
+        MixColumns(user_input);
+        AddRoundkey(user_input,newkey ,(i * 4));
 
-void MakeSubBytes(int user_input[4][4]){
-
-    for(int x = 0; x < 4; x++){
-        for (int y = 0; y < 4; y++) {
-            int sbox_x = user_input[x][y] >> 4;
-            int sbox_y = user_input[x][y] & 0xf;
-            user_input[x][y] = sbox[sbox_x][sbox_y];
-        }
-
+    return user_input;
     }
 
+
+
+
 }
+
+
 
 
 int main() {
