@@ -43,7 +43,7 @@ public:
             }
             else{
 
-            char temp = (x[i] + key[i] -(2 * 'a') + 1) % 26;
+            char temp = (x[i] + key[i] -(2 * 'a')) % 26;
             newtext.push_back(temp + 'a' );};
 
 
