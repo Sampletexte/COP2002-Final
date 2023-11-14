@@ -3,6 +3,7 @@
 #include <string>
 #include <fstream>
 #include <ctime>
+#include <sstream>
 
 
 using namespace std;
@@ -124,11 +125,11 @@ public:
          string newtext = "";
         for(int i = 0; i < x.length(); i++){
             char letter = tolower(x[i]);
-            if(x[i] == ' '){
-                newtext.push_back(' ');
+            //Opposite logic (if/else) compared to Caesar because it is a little funny
+            if(!(letter >= 'a' && 'z' >= letter)){
+                newtext.push_back(letter);
             }
             else{
-
             char temp = (letter + key[i] -(2 * 'a')) % 26;
             newtext.push_back(temp + 'a' );};
 
@@ -141,8 +142,9 @@ public:
     string Decrypt(string y,string key){
         string newtext = "";
         for(int i = 0; i < y.length(); i++){
-            if(y[i]== ' '){
-                newtext.push_back(' ');
+            //Opposite logic (if/else) compared to Caesar because it is a little funny
+            if(!(y[i] >= 'a' && 'z' >= y[i])){
+                newtext.push_back(y[i]);
             }
             else {
                 char temp = (y[i] - key[i] + 26) % 26;
@@ -291,7 +293,7 @@ class AES
         vector<vector<int>> user_input(4, vector<int> (4));
         for(int i = 0; i < 4; i++){
             for(int j=0; j < 4; j++){
-                user_input[i][j] = orig_text[counter];
+                user_input[i][j] = static_cast<unsigned char>(orig_text[counter]);
                 counter += 1;
             }
         }
@@ -640,7 +642,7 @@ string do_AES_decrypt(string orig_text, vector<vector<int>> key)
     string key_str = "";
     for (int y = 0; y < 4; y++) {
         for (int x = 0; x < 4; x++) {
-            key_str += key[y][x];
+            key_str += (key[y][x]);
         }
     }
 
@@ -659,10 +661,13 @@ int main() {
 
     cin >> choice;
 
-    string orig_text;
-    ifstream myfile;
-    myfile.open("input.txt");
-    while (getline(myfile, orig_text));
+    ifstream f("input.txt"); //taking file as inputstream
+    string orig_text="" , str="";
+    if(f) {
+        ostringstream ss;
+        ss << f.rdbuf(); // reading data
+        orig_text = ss.str();
+    }
 
 
     switch (choice) {
