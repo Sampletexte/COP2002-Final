@@ -9,8 +9,6 @@ using namespace std;
 
 
 class Ceaser
-
-
 {
     public:
     int shift_value;
@@ -155,6 +153,7 @@ public:
 };
 
 
+
 class AES
 {
     vector<vector<int>> sbox = {
@@ -284,14 +283,14 @@ class AES
     };
 
 
-
+    // TEMPORARILY COMMENTED OUT AS IT DOES NOT DIRECTLY IMPACT THE ALGORITHM
     // Converts the original text the user inputs, into the "user_input[4][4] array
     vector<vector<int>> FourByFour(string orig_text){
         int counter = 0;
         vector<vector<int>> user_input(4, vector<int> (4));
         for(int i = 0; i < 4; i++){
             for(int j=0; j < 4; j++){
-                orig_text[counter] = user_input[4][4];
+                user_input[i][j] = orig_text[counter];
                 counter += 1;
             }
         }
@@ -516,6 +515,8 @@ class AES
 
     public:
         static vector<vector<int>> KeyGenerate() {
+            srand((unsigned int) time(NULL));
+
             vector<vector<int>> tempkey(4, vector<int> (4));
 
             for (int x = 0; x < 4; x++) {
@@ -561,20 +562,6 @@ class AES
 };
 
 
-// // THIS IS A DEBUG FUNCTION TO HELP ME VISUALIZE THE DATA AS IT HEADS THROUGH THE ALGORITHM
-// void DebugDisplay(vector<vector<int>> &data)
-// {
-//     for (int i = 0; i < 4; i++) {
-//         for (int j = 0; j < 4; j++) {
-//             //std::cout << "I: " << i << " ~ " << hex <<  data[i][j] << " | ";
-//             cout << hex <<  data[i][j] << " | ";
-//         }
-//         std::cout << std::endl;
-//     }
-//     cout << "";
-// }
-
-
 vector<string> do_AES_encrypt(string orig_text, vector<vector<int>> key)
 {
     int counter = 0;
@@ -595,9 +582,12 @@ vector<string> do_AES_encrypt(string orig_text, vector<vector<int>> key)
 
             for(int j = (i * 16); j < (i * 16 + 16); j++) {
                 if (orig_text[j] == '\0') {
-                    temp_orig_text += ' ';
+                    for(int k=0; k <= (i*16+16 - j); k++){
+                        temp_orig_text += ' ';
+                    }
+                    break;
                 } else {
-                    temp_orig_text += orig_text[j];
+                    temp_orig_text += static_cast<unsigned char>(orig_text[j]);
                 }
 
             }
