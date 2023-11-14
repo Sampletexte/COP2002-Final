@@ -602,7 +602,49 @@ vector<string> do_AES_encrypt(string orig_text, vector<vector<int>> key)
         }
     }
 
-    vector<string> ret = {key_str, encrypted_text, decrypted_text};
+    vector<string> ret = {key_str, encrypted_text};
+    return ret;
+};
+
+
+string do_AES_decrypt(string orig_text, vector<vector<int>> key)
+{
+    int counter = 0;
+
+    AES aes_obj;
+    string temp_orig_text;
+    string decrypted_text = "";
+
+
+    int loops = orig_text.length() / 16;
+    if(orig_text.length() % 16 != 0){
+        loops += 1;
+    }
+
+    for(int i = 0; i < loops; i++){
+        string temp_orig_text = "";
+
+            for(int j = (i * 16); j < (i * 16 + 16); j++) {
+                if (orig_text[j] == '\0') {
+                    for(int k=0; k <= (i*16+16 - j); k++){
+                        temp_orig_text += ' ';
+                    }
+                    break;
+                } else {
+                    temp_orig_text += static_cast<unsigned char>(orig_text[j]);
+                }
+            }
+            decrypted_text += aes_obj.DecryptMain(temp_orig_text, key);
+        }
+
+    string key_str = "";
+    for (int y = 0; y < 4; y++) {
+        for (int x = 0; x < 4; x++) {
+            key_str += key[y][x];
+        }
+    }
+
+    string ret = decrypted_text;
     return ret;
 };
 
@@ -666,8 +708,7 @@ int main() {
             vector<string> ret_vals = do_AES_encrypt(orig_text, key);
             key_str = ret_vals[0];
             encrypted_text = ret_vals[1];
-            decrypted_text = ret_vals[2];
-
+            decrypted_text = do_AES_decrypt(encrypted_text, key);
 
             ofstream my_file;
             my_file.open("Key.txt", ios::out);
